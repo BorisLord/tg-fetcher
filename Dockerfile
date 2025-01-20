@@ -38,4 +38,4 @@ EXPOSE 1993
 USER deno
 
 # Commande pour démarrer l'application
-CMD ["run", "--allow-net", "--allow-read", "--allow-env", "main.ts"]
+CMD ["run", "--allow-net", "--allow-read", "--allow-env", "--unstable-kv", "main.ts"]
