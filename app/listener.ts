@@ -1,6 +1,6 @@
-import client from "./init.ts";
+import client from "./initTg.ts";
 import "@std/dotenv/load";
-import { messageSchema } from "./validation.ts";
+import { messageSchema } from "./validations/validation_Uly.ts";
 
 const chatId = parseInt(Deno.env.get("CHAT_ID")!);
 
@@ -11,7 +11,7 @@ export const listenMessage = () => {
 
       if (message.chat.id === chatId) {
         // console.log("Message object:", message);
-        console.log("Nouveau message de :", message.from?.id);
+        // console.log("Nouveau message de :", message.from?.id);
 
         try {
           const validateMsg = messageSchema.parse(message);

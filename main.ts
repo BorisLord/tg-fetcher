@@ -1,4 +1,4 @@
-import client from "./app/init.ts";
+import client from "./app/initTg.ts";
 import { listenMessage } from "./app/listener.ts";
 
 function main() {
