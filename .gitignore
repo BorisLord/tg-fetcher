@@ -1,3 +1,4 @@
 /.vscode/
 /denoKVdata/
 .env
+node_modules
