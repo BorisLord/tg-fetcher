@@ -11,11 +11,13 @@ export const listenMessage = () => {
       const message = ctx.msg;
       if (message.chat.id === chatId) {
         try {
-          const validateMsg = messageSchema.parse(message);
-          await db.set(
-            ["validateMsg"],
-            validateMsg,
-          );
+          console.log("pre validate", message);
+          const validateMsg = messageSchema.parseAsync(message);
+          console.log("post validate", await validateMsg);
+          // await db.set(
+          //   ["validateMsg"],
+          //   validateMsg,
+          // );
         } catch (err) {
           console.log("error:", err);
         }
