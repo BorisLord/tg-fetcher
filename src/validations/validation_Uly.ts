@@ -2,6 +2,16 @@ import "@std/dotenv/load";
 import { z } from "zod";
 import { definedExchanges } from "../config/defined_exchanges.ts";
 import { getExchange } from "../services/exchanges_service.ts";
+import { Exchange } from "ccxt";
+
+type availability = {
+  exchange: string;
+  token: string;
+  orientation: string;
+  entryPrice: number[];
+  takeProfit: number[];
+  stopLoss: number[];
+};
 
 const env = {
   chatId: parseInt(Deno.env.get("CHAT_ID") || "0"),
@@ -29,20 +39,73 @@ export const messageSchema = z.object({
     }),
   }),
   text: z.string().transform(async (text) => {
-    const firstLine = text.split("\n")[0]; // Extraire la première ligne
-    const match = firstLine.match(/🟢\s*([A-Z]+)\s*\(LONG\)\s*🟢/); // Extraction du token
+    const lines = text.split("\n");
+    const match = lines[0].match(/([A-Z]+)\s*\((LONG|SHORT)\)/);
 
     if (!match) {
       throw new Error("No crypto found in first line message");
     }
 
     const token = match[1];
-    const availability: Record<string, boolean> = {};
+    const orientation = match[2];
+    const entryPrice: number[] = [];
+    const takeProfit: number[] = [];
+    let stopLoss: number[] = [];
+
+    let currentSection = "";
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      if (line.includes("Prix")) {
+        currentSection = "entryPrice";
+        const prices = line.match(/[\d.,-]+/g);
+        if (prices) {
+          prices.forEach((price) => {
+            if (price.includes("-")) {
+              const [min, max] = price.split("-").map((p) =>
+                parseFloat(p.replace(",", "."))
+              );
+              entryPrice.push(min, max);
+            } else {
+              entryPrice.push(parseFloat(price.replace(",", ".")));
+            }
+          });
+        }
+      } else if (line.includes("TP")) {
+        currentSection = "takeProfit";
+      } else if (line.includes("SL")) {
+        currentSection = "stopLoss";
+        stopLoss = line.match(/[\d.,]+/g)?.map((price) =>
+          parseFloat(price.replace(",", "."))
+        ) || [];
+      } else if (currentSection === "takeProfit" && line.match(/[\d.,]+/)) {
+        takeProfit.push(
+          ...line.match(/[\d.,]+/g)?.map((price) =>
+            parseFloat(price.replace(",", "."))
+          ) || [],
+        );
+      }
+    }
+
+    const availability: availability[] = [];
     for (const exchangeId of definedExchanges) {
       const ex = getExchange(exchangeId);
       if (!ex) continue;
+
+      // ! Refined search for futur / margin
       const currencies = await ex.fetchCurrencies();
-      availability[exchangeId] = Object.keys(currencies).includes(token);
+      const isAvailable = Object.keys(currencies).includes(token);
+      if (isAvailable) {
+        availability.push({
+          exchange: exchangeId,
+          token,
+          orientation,
+          entryPrice,
+          takeProfit,
+          stopLoss,
+        });
+      }
     }
 
     return availability;

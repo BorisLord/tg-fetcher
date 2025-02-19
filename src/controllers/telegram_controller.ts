@@ -11,7 +11,7 @@ export const listenMessage = () => {
       const message = ctx.msg;
       if (message.chat.id === chatId) {
         try {
-          console.log("pre validate", message);
+          // console.log("pre validate", message);
           const validateMsg = messageSchema.parseAsync(message);
           console.log("post validate", await validateMsg);
           // await db.set(

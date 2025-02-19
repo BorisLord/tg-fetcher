@@ -1,4 +1,4 @@
-import { createExchangeClass } from "../config/init_exchange.ts";
+import { createExchangeClass } from "../services/exchanges_service.ts";
 
 // const exchanges = ["phemex", "coinbase"];
 
