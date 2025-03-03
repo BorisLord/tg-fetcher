@@ -1,1 +1,1 @@
-export const definedExchanges = ["phemex", "coinbase"];
+export const definedExchanges = ["phemex", "coinbase", "bitget"];
