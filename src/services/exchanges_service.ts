@@ -20,9 +20,10 @@ export async function forcedLoadMarkets() {
     const exchange = createExchangeClass(exchangeId);
     await exchange.loadMarkets(true);
     exchanges[exchangeId] = exchange;
+    console.log("Load Market:", exchangeId);
   }
 }
 
-export function getExchange(exchangeId: string) {
+export function getExchange(exchangeId: string): Exchange {
   return exchanges[exchangeId] || null;
 }
